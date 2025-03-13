@@ -36,6 +36,7 @@ const gameBoard = (function () {
     // use to check board array during testing
     function checkBoard() {
         console.log(board);
+        return board;
     }
 
     function checkWin(mark) {
@@ -50,23 +51,6 @@ const gameBoard = (function () {
 
     return { initializeBoard, placemark, checkBoard, checkWin, checkTie };
 })();
-
-gameBoard.initializeBoard();
-gameBoard.placemark(1, 'x');
-gameBoard.placemark(2, 'x');
-gameBoard.placemark(3, 'x');
-gameBoard.checkBoard();
-console.log(gameBoard.checkWin('x'));
-
-/* 
-Player Module
--Manage player information and turns.
--Keep track of the current player and switch between players.
-
-createPlayer(name, mark): Create a player with a name and a mark (X or O).
-getCurrentPlayer(): Return the current player.
-switchPlayer(): Change the active player after each turn.
-*/
 
 const player = function () {
     let activePlayer;
@@ -94,17 +78,41 @@ const player = function () {
     return { createPlayer, setActivePlayer, getActivePlayer, switchActivePlayer };
 };
 
-/* 
-Display Module
--Handle the user interface and interactions.
--Update the visual representation of the game board and current player.
+const display = (function () {
+    function renderBoard(board) {
+        board.forEach((spot, index) => {
+            // loops through each index in board array and puts it in the html code
+            const cell = document.querySelector(`.game-cell[data-cell-index='${index + 1}']`);
 
-renderBoard(board): Update the UI to reflect the current state of the board.
-updateCurrentPlayerDisplay(player): Show the current player's mark on the UI.
-showWinner(winner): Display a message when a player wins.
-showTie(): Display a message when the game ends in a tie.
-resetDisplay(): Clear the UI for a new game.
-*/
+            cell.textContent = spot;
+        });
+    }
+
+    function displayCurrentPlayer(activePlayer) {
+        document.querySelector('#current-player').textContent = activePlayer;
+    }
+
+    function showWinner(player) {
+        alert(`${player} has won!`);
+    }
+
+    function showTie() {
+        alert('The game has ended in a tie!');
+    }
+
+    return { renderBoard, displayCurrentPlayer, showWinner, showTie };
+})();
+
+gameBoard.initializeBoard();
+gameBoard.placemark(1, 'x');
+gameBoard.placemark(2, 'x');
+gameBoard.placemark(3, 'x');
+gameBoard.checkBoard();
+console.log(gameBoard.checkWin('x'));
+
+display.renderBoard(gameBoard.checkBoard());
+
+display.showTie();
 
 /* 
 Game Controller Module
