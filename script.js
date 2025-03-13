@@ -19,6 +19,7 @@ const gameBoard = (function () {
     function initializeBoard() {
         board.length = 0;
         board.push(...Array(9).fill(''));
+        document.querySelectorAll('.game-cell').forEach((spot) => spot.classList.remove('winner')); // removing winner background from all spots
     }
 
     // Places a mark ('x' or 'o') at the specified position on the board
@@ -49,7 +50,12 @@ const gameBoard = (function () {
         return !checkWin('x') && !checkWin('o') && !board.includes('');
     }
 
-    return { initializeBoard, placemark, checkBoard, checkWin, checkTie };
+    function winPositions(mark) {
+        const playerPositions = mark === 'x' ? xPositions : yPositions;
+        return winningPositions.find((winningCombination) => winningCombination.every((position) => playerPositions.includes(position)));
+    }
+
+    return { initializeBoard, placemark, checkBoard, checkWin, checkTie, winPositions };
 })();
 
 const player = function () {
@@ -92,8 +98,9 @@ const display = (function () {
         document.querySelector('#current-player').textContent = activePlayer;
     }
 
-    function showWinner(player) {
+    function showWinner(player, winningSpots) {
         alert(`${player} has won!`);
+        winningSpots.forEach((spot) => document.querySelector(`.game-cell[data-cell-index='${spot}']`).classList.add('winner'));
     }
 
     function showTie() {
@@ -111,8 +118,6 @@ gameBoard.checkBoard();
 console.log(gameBoard.checkWin('x'));
 
 display.renderBoard(gameBoard.checkBoard());
-
-display.showTie();
 
 /* 
 Game Controller Module
