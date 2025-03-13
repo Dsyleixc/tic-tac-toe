@@ -48,3 +48,9 @@ const gameboard = (function () {
 
     return { getPositions, checkWin, checkTie };
 })();
+
+const createPlayer = function (name, mark) {
+    return { name, mark };
+};
+
+const displayGame = (function () {})();
