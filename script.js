@@ -68,6 +68,32 @@ getCurrentPlayer(): Return the current player.
 switchPlayer(): Change the active player after each turn.
 */
 
+const player = function () {
+    let activePlayer;
+
+    function createPlayer(name, mark) {
+        return { name, mark };
+    }
+
+    function setActivePlayer(player) {
+        activePlayer = player.name;
+    }
+
+    function getActivePlayer() {
+        return activePlayer;
+    }
+
+    function switchActivePlayer(player1, player2) {
+        if (activePlayer === player1.name) {
+            activePlayer = player2.name;
+        } else {
+            activePlayer = player1.name;
+        }
+    }
+
+    return { createPlayer, setActivePlayer, getActivePlayer, switchActivePlayer };
+};
+
 /* 
 Display Module
 -Handle the user interface and interactions.
