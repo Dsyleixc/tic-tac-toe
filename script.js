@@ -2,7 +2,7 @@
 
 // setup board and winning combinations
 const gameboard = (function () {
-    const board = ['x', 'x', 'x', '', '', '', '', '', ''];
+    const board = ['x', 'o', 'x', 'x', 'x', 'o', 'x', 'o', 'x'];
     const winningCombinations = [
         [1, 2, 3],
         [4, 5, 6],
@@ -20,19 +20,31 @@ const gameboard = (function () {
         let positions = [];
         board.forEach((spot, index) => {
             if (spot === mark) {
-                positions.push(index);
+                positions.push(index + 1);
             }
         });
 
         if (mark === 'x') {
             xPositions = positions;
-            console.log(xPositions);
         } else if (mark === 'o') {
             oPositions = positions;
         }
     }
 
-    return { getPositions };
-})();
+    function checkWin(mark) {
+        // get positions for mark
+        getPositions(mark);
 
-gameboard.getPositions('x');
+        // get proper mark array
+        const positionsToCheck = mark === 'x' ? xPositions : oPositions;
+
+        // true/false if they won
+        return winningCombinations.some((winningCombination) => winningCombination.every((position) => positionsToCheck.includes(position)));
+    }
+
+    function checkTie() {
+        return board.includes('');
+    }
+
+    return { getPositions, checkWin, checkTie };
+})();
