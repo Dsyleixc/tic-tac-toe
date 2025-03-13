@@ -20,6 +20,8 @@ const gameBoard = (function () {
         board.length = 0;
         board.push(...Array(9).fill(''));
         document.querySelectorAll('.game-cell').forEach((spot) => spot.classList.remove('winner')); // removing winner background from all spots
+        xPositions.length = 0;
+        yPositions.length = 0;
     }
 
     // Places a mark ('x' or 'o') at the specified position on the board
@@ -36,7 +38,6 @@ const gameBoard = (function () {
 
     // use to check board array during testing
     function checkBoard() {
-        console.log(board);
         return board;
     }
 
@@ -58,7 +59,7 @@ const gameBoard = (function () {
     return { initializeBoard, placemark, checkBoard, checkWin, checkTie, winPositions };
 })();
 
-const player = function () {
+const player = (function () {
     let activePlayer;
 
     function createPlayer(name, mark) {
@@ -66,7 +67,7 @@ const player = function () {
     }
 
     function setActivePlayer(player) {
-        activePlayer = player.name;
+        activePlayer = player;
     }
 
     function getActivePlayer() {
@@ -74,15 +75,15 @@ const player = function () {
     }
 
     function switchActivePlayer(player1, player2) {
-        if (activePlayer === player1.name) {
-            activePlayer = player2.name;
+        if (activePlayer === player1) {
+            activePlayer = player2;
         } else {
-            activePlayer = player1.name;
+            activePlayer = player1;
         }
     }
 
     return { createPlayer, setActivePlayer, getActivePlayer, switchActivePlayer };
-};
+})();
 
 const display = (function () {
     function renderBoard(board) {
@@ -95,11 +96,10 @@ const display = (function () {
     }
 
     function displayCurrentPlayer(activePlayer) {
-        document.querySelector('#current-player').textContent = activePlayer;
+        document.querySelector('#current-player').textContent = activePlayer.name;
     }
 
     function showWinner(player, winningSpots) {
-        alert(`${player} has won!`);
         winningSpots.forEach((spot) => document.querySelector(`.game-cell[data-cell-index='${spot}']`).classList.add('winner'));
     }
 
@@ -110,22 +110,67 @@ const display = (function () {
     return { renderBoard, displayCurrentPlayer, showWinner, showTie };
 })();
 
-gameBoard.initializeBoard();
-gameBoard.placemark(1, 'x');
-gameBoard.placemark(2, 'x');
-gameBoard.placemark(3, 'x');
-gameBoard.checkBoard();
-console.log(gameBoard.checkWin('x'));
+const gameController = (function () {
+    let player1;
+    let player2;
 
-display.renderBoard(gameBoard.checkBoard());
+    function init() {
+        gameBoard.initializeBoard();
+        display.renderBoard(gameBoard.checkBoard());
+        player1 = player.createPlayer('player 1', 'x');
+        player2 = player.createPlayer('player 2', 'o');
+        player.setActivePlayer(player1);
+        display.displayCurrentPlayer(player.getActivePlayer());
+    }
 
-/* 
-Game Controller Module
--Coordinate the interaction between the gameboard, players, and display.
--Manage the game flow, including starting, playing, and resetting the game.
+    function userClick(e) {
+        if (!e.target.classList.contains('game-cell')) {
+            return;
+        }
 
-startGame(): Initialize the game and set up event listeners.
-handleCellClick(position): Respond to user clicks on the game board.
-checkGameStatus(): Check if there is a winner or a tie after each move.
-restartGame(): Reset the game state and UI for a new game.
-*/
+        // get which cell player clicked
+        const cellClicked = Number(e.target.getAttribute('data-cell-index'));
+
+        // get active player
+        const activePlayer = player.getActivePlayer();
+
+        // push to board and xPositions or oPositions array
+        gameBoard.placemark(cellClicked, activePlayer.mark);
+
+        // render new board
+        display.renderBoard(gameBoard.checkBoard());
+
+        // check if there is a winner or tie
+        if (gameBoard.checkWin(activePlayer.mark)) {
+            display.showWinner(activePlayer.name, gameBoard.winPositions(activePlayer.mark));
+            // Remove the event listener if there's a winner
+            document.querySelector('.game-board').removeEventListener('click', userClick);
+            return; // Stop further processing
+        }
+        if (gameBoard.checkTie()) {
+            display.showTie();
+            // Remove the event listener if there's a tie
+            document.querySelector('.game-board').removeEventListener('click', userClick);
+            return; // Stop further processing
+        }
+
+        // if neither, switch player
+        player.switchActivePlayer(player1, player2);
+        display.displayCurrentPlayer(player.getActivePlayer());
+    }
+
+    function startGame() {
+        init();
+        document.querySelector('.game-board').addEventListener('click', userClick);
+        document.querySelector('#restart-button').addEventListener('click', restartGame);
+    }
+
+    function restartGame() {
+        startGame();
+    }
+
+    return { startGame };
+})();
+
+// run code
+gameController.startGame();
